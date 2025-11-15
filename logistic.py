@@ -1,12 +1,11 @@
 from collections import deque
 
+
 def run():
     capacity_matrix = create_graph_matrix()
-    print("\nMatrix:")
-    print(capacity_matrix)
 
-    sources = [0, 1] # Terminals
-    sinks = [6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19] # shops
+    sources = [0, 1]  # Terminals
+    sinks = [6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]  # shops
 
     results = []
     for source in sources:
@@ -19,8 +18,7 @@ def run():
                 }
             )
 
-    print("\nResult:")
-    print(results)
+    print_results(results)
 
 
 def create_graph_matrix():
@@ -74,18 +72,13 @@ def bfs(capacity_matrix, flow_matrix, source, sink, parent):
     return False
 
 
-# Основна функція для обчислення максимального потоку
 def edmonds_karp(capacity_matrix, source, sink):
     num_nodes = len(capacity_matrix)
-    flow_matrix = [
-        [0] * num_nodes for _ in range(num_nodes)
-    ]  # Ініціалізуємо матрицю потоку нулем
+    flow_matrix = [[0] * num_nodes for _ in range(num_nodes)]
     parent = [-1] * num_nodes
     max_flow = 0
 
-    # Поки є збільшуючий шлях, додаємо потік
     while bfs(capacity_matrix, flow_matrix, source, sink, parent):
-        # Знаходимо мінімальну пропускну здатність уздовж знайденого шляху (вузьке місце)
         path_flow = float("Inf")
         current_node = sink
 
@@ -98,7 +91,6 @@ def edmonds_karp(capacity_matrix, source, sink):
             )
             current_node = previous_node
 
-        # Оновлюємо потік уздовж шляху, враховуючи зворотний потік
         current_node = sink
         while current_node != source:
             previous_node = parent[current_node]
@@ -106,10 +98,23 @@ def edmonds_karp(capacity_matrix, source, sink):
             flow_matrix[current_node][previous_node] -= path_flow
             current_node = previous_node
 
-        # Збільшуємо максимальний потік
         max_flow += path_flow
 
     return max_flow
+
+
+def print_results(results: list):
+    print("\nResult:")
+    for result in results:
+        terminal = result["terminal"]
+        shop = result["shop"]
+        fact_capacity = result["flow"]
+
+        if fact_capacity == 0:
+            # no connection between this terminal and this shop
+            continue
+
+        print(f"Terminal {terminal + 1}, Shop {shop - 5}, Capacity {fact_capacity}")
 
 
 if __name__ == "__main__":
