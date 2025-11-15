@@ -1,11 +1,26 @@
-# TODO to remove?
-# import networkx as nx
-
+from collections import deque
 
 def run():
     capacity_matrix = create_graph_matrix()
     print("\nMatrix:")
     print(capacity_matrix)
+
+    sources = [0, 1] # Terminals
+    sinks = [6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19] # shops
+
+    results = []
+    for source in sources:
+        for sink in sinks:
+            results.append(
+                {
+                    "terminal": source,
+                    "shop": sink,
+                    "flow": edmonds_karp(capacity_matrix, source, sink),
+                }
+            )
+
+    print("\nResult:")
+    print(results)
 
 
 def create_graph_matrix():
@@ -33,30 +48,68 @@ def create_graph_matrix():
     ]
 
 
-# TODO to remove?
-# def create_graph() -> nx.DiGraph:
-#     graph = nx.DiGraph()
+# bfs search
+def bfs(capacity_matrix, flow_matrix, source, sink, parent):
+    visited = [False] * len(capacity_matrix)
+    queue = deque([source])
+    visited[source] = True
 
-#     # place indexes
-#     terminal_1 = 0
-#     terminal_2 = 1
-#     storage_1 = 2
-#     storage_2 = 3
-#     storage_3 = 4
-#     storage_4 = 5
+    while queue:
+        current_node = queue.popleft()
 
-#     # capacity between places
-#     edges = [
-#         (terminal_1, storage_1, 25),
-#         (terminal_1, storage_2, 20),
-#         (terminal_1, storage_3, 15),
-#         (terminal_2, storage_3, 15),
-#         (terminal_2, storage_4, 30),
-#         (terminal_2, storage_2, 10),
-#     ]
+        for neighbor in range(len(capacity_matrix)):
+            # is there more capacity
+            if (
+                not visited[neighbor]
+                and capacity_matrix[current_node][neighbor]
+                - flow_matrix[current_node][neighbor]
+                > 0
+            ):
+                parent[neighbor] = current_node
+                visited[neighbor] = True
+                if neighbor == sink:
+                    return True
+                queue.append(neighbor)
 
-#     graph.add_weighted_edges_from(edges)
-#     return graph
+    return False
+
+
+# Основна функція для обчислення максимального потоку
+def edmonds_karp(capacity_matrix, source, sink):
+    num_nodes = len(capacity_matrix)
+    flow_matrix = [
+        [0] * num_nodes for _ in range(num_nodes)
+    ]  # Ініціалізуємо матрицю потоку нулем
+    parent = [-1] * num_nodes
+    max_flow = 0
+
+    # Поки є збільшуючий шлях, додаємо потік
+    while bfs(capacity_matrix, flow_matrix, source, sink, parent):
+        # Знаходимо мінімальну пропускну здатність уздовж знайденого шляху (вузьке місце)
+        path_flow = float("Inf")
+        current_node = sink
+
+        while current_node != source:
+            previous_node = parent[current_node]
+            path_flow = min(
+                path_flow,
+                capacity_matrix[previous_node][current_node]
+                - flow_matrix[previous_node][current_node],
+            )
+            current_node = previous_node
+
+        # Оновлюємо потік уздовж шляху, враховуючи зворотний потік
+        current_node = sink
+        while current_node != source:
+            previous_node = parent[current_node]
+            flow_matrix[previous_node][current_node] += path_flow
+            flow_matrix[current_node][previous_node] -= path_flow
+            current_node = previous_node
+
+        # Збільшуємо максимальний потік
+        max_flow += path_flow
+
+    return max_flow
 
 
 if __name__ == "__main__":
