@@ -3,6 +3,7 @@ Algo homework 04
 
 # Tasks
 logistic.py -> Implementation of Edmonds-Karp algorithm
+
 trie_task.py -> Implementation of extended Trie class
 
 # Logistic task results
