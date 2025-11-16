@@ -22,7 +22,8 @@ class Homework(Trie):
             raise TypeError(
                 f"Illegal argument for has_prefix: prefix = {prefix} must be a string"
             )
-
+        
+        prefix = prefix.lower()
         return len(self.keys_with_prefix(prefix)) > 0
 
 
